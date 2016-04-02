@@ -2,7 +2,7 @@
 # 260506607
 
 	.text
-	# .globl findRoot
+	.globl findRoot
 
 findRoot:
 
@@ -78,29 +78,29 @@ notAtEpsilon:
 	mov.s	$f12, $f20
 	jal	evaluate	# $f0 holds "p(a)"
 
-	mul.s	$f5, $f0, $f25	# $f6 holds "p(a) * p(b)"
-	c.le.s	$f5, $f24
+	mul.s	$f4, $f0, $f25	# $f4 holds "p(a) * p(b)"
+	c.le.s	$f4, $f24
 	bc1t	cGetsB
 
 aGetsB:
 
-	mov.s	$f20, $f21	# if "p(a) * p(b) > 0", set "a = b"
+	mov.s	$f12, $f21	# if "p(a) * p(b) > 0", set "a = b"
+	mov.s	$f13, $f22	# keep "c = c" for the next recursion
 	j	recurse
 
 cGetsB:
 
-	mov.s	$f22, $f21	# otherwise, if "p(a) * p(b) <= 0", set "c = b"
-	
+	mov.s	$f13, $f21	# otherwise, if "p(a) * p(b) <= 0", set "c = b"
+	mov.s	$f12, $f20	# keep "a = a" for the next recursion
+
 recurse:
 
 # return "findRoot(a, c)" using the new values
 
-	mov.s	$f12, $f20
-	mov.s	$f13, $f22
 	mov.s	$f14, $f23
 
 	jal	findRoot	# recurse!
-	
+
 return:
 
 #

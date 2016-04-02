@@ -37,8 +37,8 @@ findRoot:
 	cvt.s.w	$f24, $f4	# $f24 holds floating point 0
 
 	addi	$t0, $zero, 2
-	mtc1	$t0, $f25
-	cvt.s.w	$f25, $f25	# $f25 holds floating point 2
+	mtc1	$t0, $f4
+	cvt.s.w	$f25, $f4	# $f25 holds floating point 2
 
 loopFindRoot:
 
@@ -82,8 +82,8 @@ notAtEpsilon:
 	mov.s	$f12, $f20
 	jal	evaluate	# $f0 holds "p(a)"
 
-	mul.s	$f5, $f0, $f26	# $f6 holds "p(a) * p(b)"
-	c.le.s	$f5, $f24
+	mul.s	$f4, $f0, $f26	# $f4 holds "p(a) * p(b)"
+	c.le.s	$f4, $f24
 	bc1t	cGetsB
 
 aGetsB:

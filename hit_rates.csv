@@ -1,0 +1,5 @@
+blocks  hitsRecur   missesRecur     hitsIter    missesIter
+8       1169        8               799         2
+16      1162        15              798         3
+32      1148        29              796         5
+64      1122        55              793         8

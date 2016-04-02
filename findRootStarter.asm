@@ -3,7 +3,7 @@
 #
 # findRootStarter.asm
 
-.data
+			.data
 
 # define the polynomial
 POLYORDER:		.word 3			# Order of polynomial.
@@ -16,8 +16,9 @@ EPSILON:		.float	0.000001	# Value e in algorithm above.
 errorMessage:		.asciiz "invalid input: two arguments of p() must be of opposite sign"
 solutionMessage:	.asciiz "solution is "
 
-.text
-.globl	main
+			.text
+			.globl	main
+			.globl evaluate
 
 main:
 

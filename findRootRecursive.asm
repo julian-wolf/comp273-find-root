@@ -3,49 +3,124 @@
 
 	.text
 	.globl findRoot
-	
+
 findRoot:
 
-	subi	$sp, $sp, 32	# save the variable registers used by the calling function
-	sw	$s7, 28($sp)
-	sw	$s6, 24($sp)
-	sw	$s5, 20($sp)
-	sw	$s4, 16($sp)
-	sw	$s3, 12($sp)
-	sw	$s2, 08($sp)
-	sw	$s1, 04($sp)
-	sw	$s0, 00($sp)
+	subi	$sp, $sp, 20	# save the variable registers used by the calling function
+	swc1	$f25, 16($sp)
+	swc1	$f24, 12($sp)
+	swc1	$f23, 08($sp)
+	swc1	$f22, 04($sp)
+	swc1	$f21, 00($sp)
 
 	subi	$sp, $sp, 12	# save the argument registers used by the calling function
-	sw	$a2, 08($sp)
-	sw	$a1, 04($sp)
-	sw	$a0, 00($sp)
-	
+	swc1	$f14, 08($sp)
+	swc1	$f13, 04($sp)
+	swc1	$f12, 00($sp)
+
+	subi	$sp, $sp, 4	# keep track of where this call is in the stack
+	sw	$ra, 0($sp)
+
 #
 # actual function body begins here
 #
 
+# initialize main variables
 
+	mov.s	$f20, $f12	# $f20 holds the lower bound, "a"
+	mov.s	$f22, $f13	# $f22 holds the upper bound, "c"
 
+	add.s	$f4, $f20, $f22
+	addi	$t0, $zero, 2
+	mtc1	$t0, $f5
+	cvt.s.w	$f5, $f5
+	div.s	$f21, $f4, $f5	# $f21 holds the middle point, "b"
+
+	mov.s	$f23, $f14	# $f23 holds the system epsilon, "e"
+
+	mtc1	$zero, $f4
+	cvt.s.w	$f24, $f4	# $f24 holds floating point 0
+
+	mov.s	$f12, $f21
+	jal	evaluate
+	mov.s	$f25, $f0	# $f25 holds "p(b)"
+
+# check if the root is at "b" (block ends at bNotARoot)
+
+	c.eq.s	$f25, $f24
+	bc1f	bNotARoot	# if "p(b) != 0", then move to the next branch
+
+	mov.s	$f0, $f21
+	j	return		# otherwise, if "p(b) == 0", return "b"
+
+bNotARoot:
+
+# check if "abs(a - c) < e" (block ends at notAtEpsilon)
+
+	sub.s	$f4, $f22, $f20	# see if "c - a" is positive
+	c.le.s	$f4, $f24
+	bc1f	absValueFound	# if so, "abs(c - a) = c - a"
+
+	sub.s	$f4, $f20, $f22	# otherwise, "abs(c - a) = a - c"
+
+absValueFound:
+
+	c.lt.s	$f4, $f23
+	bc1f	notAtEpsilon	# if "abs(a - c) >= e", then move to the next branch
+
+	mov.s	$f0, $f21
+	j	return		# otherwise, if "abs(a - c) < e", return "b"
+
+notAtEpsilon:
+
+# check what the sign of "p(a) * p(b)" is (block ends at recurse)
+
+	mov.s	$f12, $f20
+	jal	evaluate
+	mov.s	$f4, $f0	# $f4 holds "p(a)"
+
+	mul.s	$f5, $f4, $f25	# $f6 holds "p(a) * p(b)"
+	c.le.s	$f5, $f24
+	bc1t	cGetsB
+
+aGetsB:
+
+	mov.s	$f20, $f21	# if "p(a) * p(b) > 0", set "a = b"
+	j	recurse
+
+cGetsB:
+
+	mov.s	$f22, $f21	# otherwise, if "p(a) * p(b) <= 0", set "c = b"
+	
+recurse:
+
+# return "findRoot(a, c)" using the new values
+
+	mov.s	$f12, $f20
+	mov.s	$f13, $f22
+	mov.s	$f14, $f23
+
+	jal	findRoot	# recurse!
+	
 return:
 
 #
 # actual function body ends here
 #
 
-	lw	$a2, 08($sp)	# reset the argument registers used within the function
-	lw	$a1, 04($sp)
-	lw	$a0, 00($sp)
+	lw	$ra, 0($sp)	# reset the location in the call stack
+	addi	$sp, $sp, 4
+
+	lwc1	$f14, 08($sp)	# reset the argument registers used within the function
+	lwc1	$f13, 04($sp)
+	lwc1	$f12, 00($sp)
 	addi	$sp, $sp, 12
 
-	lw	$s7, 28($sp)	# reset the variable registers used within the function
-	lw	$s6, 24($sp)
-	lw	$s5, 20($sp)
-	lw	$s4, 16($sp)
-	lw	$s3, 12($sp)
-	lw	$s2, 08($sp)
-	lw	$s1, 04($sp)
-	lw	$s0, 00($sp)
-	addi	$sp, $sp, 32
+	lwc1	$f25, 16($sp)	# reset the variable registers used within the function
+	lwc1	$f24, 12($sp)
+	lwc1	$f23, 08($sp)
+	lwc1	$f22, 04($sp)
+	lwc1	$f21, 00($sp)
+	addi	$sp, $sp, 20
 
 	jr	$ra		# jump back to the calling program

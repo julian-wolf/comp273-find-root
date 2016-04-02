@@ -2,7 +2,7 @@
 # 260506607
 
 	.text
-	.globl findRoot
+	# .globl findRoot
 
 findRoot:
 
@@ -76,10 +76,9 @@ notAtEpsilon:
 # check what the sign of "p(a) * p(b)" is (block ends at recurse)
 
 	mov.s	$f12, $f20
-	jal	evaluate
-	mov.s	$f4, $f0	# $f4 holds "p(a)"
+	jal	evaluate	# $f0 holds "p(a)"
 
-	mul.s	$f5, $f4, $f25	# $f6 holds "p(a) * p(b)"
+	mul.s	$f5, $f0, $f25	# $f6 holds "p(a) * p(b)"
 	c.le.s	$f5, $f24
 	bc1t	cGetsB
 
